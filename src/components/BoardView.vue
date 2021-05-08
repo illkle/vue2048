@@ -2,14 +2,21 @@
   <div class="board">
     <div :style="GridStyle" class="wrapper">
       <template v-for="line in board" :key="line.index">
-        <div
-          :class="cssClassFromNumber(item)"
-          class="gridItem"
-          v-for="item in line"
-          :key="item.index"
-        >
-          <template v-if="item !== EMPTY_CELL">{{ item }}</template>
-        </div>
+        <template v-for="item in line" :key="item.index">
+          <div class="gridItem">
+            <div
+              class="cell"
+              :style="{
+                backgroundColor: Number.isNaN(Number(item))
+                  ? 'white'
+                  : `hsl(${55 - Math.log2(item) * 4}, 100%, 50%)`,
+              }"
+              v-if="item !== EMPTY_CELL"
+            >
+              {{ item }}
+            </div>
+          </div>
+        </template>
       </template>
     </div>
   </div>
@@ -45,29 +52,7 @@ export default {
       };
     },
   },
-  methods: {
-    cssClassFromNumber(number) {
-      console.log("ASDasd");
-      const classes = [
-        "one",
-        "two",
-        "three",
-        "four",
-        "five",
-        "six",
-        "seven",
-        "eight",
-        "nine",
-        "ten",
-      ];
-      let position = Math.log2(number);
-      if (position > classes.length) {
-        return classes[classes.length - 1];
-      } else {
-        return classes[position - 1];
-      }
-    },
-  },
+  methods: {},
 };
 </script>
 
@@ -82,13 +67,18 @@ export default {
   grid-gap: 10px;
 }
 .gridItem {
+  font-size: 30px;
+  color: white;
+
+  border-radius: 6%;
+  background-color: rgb(224, 216, 194);
+}
+.cell {
+  height: 100%;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  font-size: 40px;
-  color: black;
-  border: 2px solid black;
-  border-radius: 4px;
-  background-color: wheat;
+
+  border-radius: 6%;
 }
 </style>
