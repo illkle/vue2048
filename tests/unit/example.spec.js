@@ -11,13 +11,13 @@ const encodeLine = (line) =>
   });
 
 const encodeBoard = (board) => {
-  return board.map((line) => encodeLine(line));
+  return { field: board.map((line) => encodeLine(line)) };
 };
 
 const decodeLine = (line) => line.map((obj) => obj.val);
 
 const decodeBoard = (board) => {
-  return board.map((line) => decodeLine(line));
+  return board.field.map((line) => decodeLine(line));
 };
 
 describe("Basic Gravity", () => {
@@ -25,25 +25,25 @@ describe("Basic Gravity", () => {
     const initial = encodeLine([X, "4", X, "8"]);
     const expected = ["4", "8", X, X];
 
-    expect(decodeLine(b.gravity(initial))).toStrictEqual(expected);
+    expect(decodeLine(b.gravity(initial).newLine)).toStrictEqual(expected);
   });
   it("Gravity works merging stuff", () => {
     const initial = encodeLine(["4", "4", "8", "8"]);
     const expected = ["8", "16", X, X];
 
-    expect(decodeLine(b.gravity(initial))).toStrictEqual(expected);
+    expect(decodeLine(b.gravity(initial).newLine)).toStrictEqual(expected);
   });
   it("Gravity works moving and merging", () => {
     const initial = encodeLine(["4", X, X, "4", "2", "16", X, "16"]);
     const expected = ["8", "2", "32", X, X, X, X, X];
 
-    expect(decodeLine(b.gravity(initial))).toStrictEqual(expected);
+    expect(decodeLine(b.gravity(initial).newLine)).toStrictEqual(expected);
   });
   it("Gravity works when merging several adjacent", () => {
     const initial = encodeLine(["4", X, X, "4", "2", "16", "16", "16"]);
     const expected = ["8", "2", "32", "16", X, X, X, X];
 
-    expect(decodeLine(b.gravity(initial))).toStrictEqual(expected);
+    expect(decodeLine(b.gravity(initial).newLine)).toStrictEqual(expected);
   });
 });
 

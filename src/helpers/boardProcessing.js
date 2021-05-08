@@ -10,7 +10,8 @@ const getRandomVal = (min, max) => {
   return Math.floor(Math.random() * (max - min) + min);
 };
 
-const countBoardSum = (board) => {
+const countBoardSum = (boardObj) => {
+  const board = boardObj.field;
   return board
     .reduce((a, b) => a.concat(b))
     .reduce((a, b) => {
@@ -29,7 +30,8 @@ const checkArrayEquality = (a, b) => {
   return JSON.stringify(a) === JSON.stringify(b);
 };
 
-const loseCheck = (board) => {
+const loseCheck = (boardObj) => {
+  const board = boardObj.field;
   for (let x = 0; x < board[0].length; x++) {
     for (let y = 0; y < board.length; y++) {
       if (board[y][x] === EMPTY_CELL) {
@@ -38,23 +40,27 @@ const loseCheck = (board) => {
     }
   }
 
-  let boardInitialState = JSON.stringify(board);
+  const boardInitialState = JSON.stringify(board);
 
-  let movedBoard = moveLeft(board);
+  const getInitialBoard = () => {
+    return { field: JSON.parse(boardInitialState) };
+  };
 
-  if (checkArrayEquality(board, movedBoard) === false) {
+  let movedBoard = moveLeft(getInitialBoard());
+
+  if (checkArrayEquality(board, movedBoard.field) === false) {
     return false;
   }
-  movedBoard = moveRight(JSON.parse(boardInitialState));
-  if (checkArrayEquality(board, movedBoard) === false) {
+  movedBoard = moveRight(getInitialBoard());
+  if (checkArrayEquality(board, movedBoard.field) === false) {
     return false;
   }
-  movedBoard = moveDown(JSON.parse(boardInitialState));
-  if (checkArrayEquality(board, movedBoard) === false) {
+  movedBoard = moveDown(getInitialBoard());
+  if (checkArrayEquality(board, movedBoard.field) === false) {
     return false;
   }
-  movedBoard = moveUp(JSON.parse(boardInitialState));
-  if (checkArrayEquality(board, movedBoard) === false) {
+  movedBoard = moveUp(getInitialBoard());
+  if (checkArrayEquality(board, movedBoard.field) === false) {
     return false;
   }
 
@@ -62,12 +68,14 @@ const loseCheck = (board) => {
 };
 
 const initBoard = (x, y) => {
-  return Array.from(Array(y), () =>
+  const field = Array.from(Array(y), () =>
     Array(x).fill({ id: uuid(), val: EMPTY_CELL })
   );
+  return { field, remainder: ["yoo"] };
 };
 
-const addTwoToRandomPlace = (board) => {
+const addTwoToRandomPlace = (boardObj) => {
+  const board = boardObj.field;
   let boardSizeX = board[0].length;
   let boardSizeY = board.length;
 
@@ -86,11 +94,12 @@ const addTwoToRandomPlace = (board) => {
   if (tried < boardSize) {
     board[y][x] = { id: uuid(), val: 2 };
   }
-  return board;
+  return { field: board, remainder: boardObj.remainder };
 };
 
 const gravity = (line) => {
   const grav = [];
+  const rest = [];
   let previous = "none";
   for (let i = 0; i < line.length; i++) {
     const elem = line[i];
@@ -98,6 +107,7 @@ const gravity = (line) => {
       if (elem.val === previous.val) {
         grav[grav.length - 1].val = String(Number(elem.val) * 2);
         previous = "none";
+        rest.push(elem);
       } else {
         previous = elem;
         grav.push(elem);
@@ -110,54 +120,85 @@ const gravity = (line) => {
     val: EMPTY_CELL,
   });
   const newLine = grav.concat(remainder);
-  return newLine;
+  return { newLine, rest };
 };
 
-const moveLeft = (board) => {
-  return board.map((line) => gravity(line));
+const moveLeft = (boardObj) => {
+  const board = boardObj.field;
+  let rem = [];
+  const result = board.map((line) => {
+    const result = gravity(line);
+    if (result.rest.length > 0) {
+      rem = rem.concat(result.rest);
+    }
+    return result.newLine;
+  });
+  return { field: result, remainder: rem };
 };
 
-const moveRight = (board) => {
-  const newBoard = board.map((line) => gravity(line.reverse()).reverse());
-  return newBoard;
+const moveRight = (boardObj) => {
+  const board = boardObj.field;
+  let rem = [];
+  const result = board.map((line) => {
+    const result = gravity(line.reverse());
+    if (result.rest.length > 0) {
+      rem = rem.concat(result.rest);
+    }
+    return result.newLine.reverse();
+  });
+
+  return { field: result, remainder: rem };
 };
 
-const moveUp = (board) => {
-  const moved = [...board];
+const moveUp = (boardObj) => {
+  const board = boardObj.field;
 
-  for (let x = 0; x < moved[0].length; x++) {
+  let rem = [];
+
+  for (let x = 0; x < board[0].length; x++) {
     const toProcess = [];
 
-    for (let y = 0; y < moved.length; y++) {
-      toProcess.push(moved[y][x]);
+    for (let y = 0; y < board.length; y++) {
+      toProcess.push(board[y][x]);
     }
 
-    const processed = gravity(toProcess);
+    const result = gravity(toProcess);
+    const processed = result.newLine;
+    if (result.rest.length > 0) {
+      rem = rem.concat(result.rest);
+    }
 
-    for (let y = 0; y < moved.length; y++) {
-      moved[y][x] = processed[y];
+    for (let y = 0; y < board.length; y++) {
+      board[y][x] = processed[y];
     }
   }
-  return moved;
+  return { field: board, remainder: rem };
 };
 
-const moveDown = (board) => {
-  const moved = [...board];
+const moveDown = (boardObj) => {
+  const board = boardObj.field;
 
-  for (let x = 0; x < moved[0].length; x++) {
+  let rem = [];
+
+  for (let x = 0; x < board[0].length; x++) {
     const toProcess = [];
 
-    for (let y = moved.length - 1; y >= 0; y--) {
-      toProcess.push(moved[y][x]);
+    for (let y = board.length - 1; y >= 0; y--) {
+      toProcess.push(board[y][x]);
     }
 
-    const processed = gravity(toProcess);
+    const result = gravity(toProcess);
+    const processed = result.newLine;
+    if (result.rest.length > 0) {
+      rem = rem.concat(result.rest);
+    }
 
-    for (let y = moved.length - 1; y >= 0; y--) {
-      moved[y][x] = processed[moved.length - 1 - y];
+    for (let y = board.length - 1; y >= 0; y--) {
+      board[y][x] = processed[board.length - 1 - y];
     }
   }
-  return moved;
+
+  return { field: board, remainder: rem };
 };
 
 export default {

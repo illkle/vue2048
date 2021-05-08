@@ -1,7 +1,7 @@
 <template>
   <div class="outerCont">
     <div class="gridContainer">
-      <template :key="line.index" v-for="line in board">
+      <template :key="line.index" v-for="line in board.field">
         <template :key="item.id" v-for="item in line">
           <div class="gridEmpty"></div>
         </template>
@@ -15,7 +15,7 @@
         class="gridCell"
         :style="{ left: `${cell.x * 85}px`, top: `${cell.y * 85}px` }"
       ></div>
-      <template v-for="(line, lineindex) in board" :key="line.index">
+      <template v-for="(line, lineindex) in board.field" :key="line.index">
         <template v-for="(item, itemindex) in line" :key="item.id">
           <div
             class="gridCell"
