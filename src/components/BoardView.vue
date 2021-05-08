@@ -1,25 +1,41 @@
 <template>
-  <div class="board">
-    <div :style="GridStyle" class="wrapper">
-      <template v-for="line in board" :key="line.index">
-        <template v-for="item in line" :key="item.index">
-          <div class="gridItem">
-            <div
-              class="cell"
-              :style="{
-                backgroundColor: Number.isNaN(Number(item))
-                  ? 'white'
-                  : `hsl(${55 - Math.log2(item) * 4}, 100%, 50%)`,
-              }"
-              v-if="item !== EMPTY_CELL"
-            >
-              {{ item }}
-            </div>
+  <div class="outerCont">
+    <div class="gridContainer">
+      <template :key="line.index" v-for="line in board">
+        <template :key="item.id" v-for="item in line">
+          <div class="gridEmpty"></div>
+        </template>
+      </template>
+    </div>
+
+    <div class="gridContainerTop">
+      <div
+        v-for="cell in cells"
+        :key="cell.id"
+        class="gridCell"
+        :style="{ left: `${cell.x * 85}px`, top: `${cell.y * 85}px` }"
+      ></div>
+      <template v-for="(line, lineindex) in board" :key="line.index">
+        <template v-for="(item, itemindex) in line" :key="item.id">
+          <div
+            class="gridCell"
+            :style="{
+              backgroundColor: Number.isNaN(Number(item.val))
+                ? 'white'
+                : `hsl(${55 - Math.log2(item.val) * 4}, 100%, 50%)`,
+              left: `${itemindex * 85}px`,
+              top: `${lineindex * 85}px`,
+            }"
+            v-if="item.val !== EMPTY_CELL"
+          >
+            {{ item.val }}
           </div>
         </template>
       </template>
     </div>
   </div>
+
+  <div :style="GridStyle" class="wrapper"></div>
 </template>
 
 <script>
@@ -57,28 +73,50 @@ export default {
 </script>
 
 <style scoped>
-.board {
+* {
+  margin: 0;
+  padding: 0;
+  font-family: "Roboto";
+}
+.outerCont {
   display: flex;
   justify-content: center;
+  margin-top: 150px;
+}
+.gridContainer {
+  width: 340px;
+  display: flex;
+  flex-wrap: wrap;
 }
 
-.wrapper {
-  display: grid;
-  grid-gap: 10px;
+.gridContainerTop {
+  width: 340px;
+  display: flex;
+  flex-wrap: wrap;
+  position: absolute;
 }
-.gridItem {
+
+.gridEmpty,
+.gridCell {
+  margin: 5px;
+  width: 75px;
+  height: 75px;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  border-radius: 6%;
+}
+
+.gridEmpty {
   font-size: 30px;
   color: white;
-
-  border-radius: 6%;
   background-color: rgb(224, 216, 194);
 }
-.cell {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
 
-  border-radius: 6%;
+.gridCell {
+  font-size: 20px;
+  color: white;
+  position: absolute;
+  transition: 0.2s;
 }
 </style>

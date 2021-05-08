@@ -1,4 +1,8 @@
 /* eslint-disable no-unused-vars */
+import { v4 as uuid } from "uuid";
+
+///ELEMENT SCHEMA
+//const element = { id: "UUID-GENERATED", val: 2 };
 
 const EMPTY_CELL = "empty";
 
@@ -11,15 +15,14 @@ const countBoardSum = (board) => {
     .reduce((a, b) => a.concat(b))
     .reduce((a, b) => {
       let result = 0;
-
-      if (a !== EMPTY_CELL) {
-        result += Number(a);
+      if (a.val !== EMPTY_CELL) {
+        result += Number(a.val);
       }
-      if (b !== EMPTY_CELL) {
-        result += Number(b);
+      if (b.val !== EMPTY_CELL) {
+        result += Number(b.val);
       }
-      return result;
-    });
+      return { val: result };
+    }).val;
 };
 
 const checkArrayEquality = (a, b) => {
@@ -59,7 +62,9 @@ const loseCheck = (board) => {
 };
 
 const initBoard = (x, y) => {
-  return Array.from(Array(y), () => Array(x).fill(EMPTY_CELL));
+  return Array.from(Array(y), () =>
+    Array(x).fill({ id: uuid(), val: EMPTY_CELL })
+  );
 };
 
 const addTwoToRandomPlace = (board) => {
@@ -72,14 +77,14 @@ const addTwoToRandomPlace = (board) => {
   const boardSize = boardSizeX * boardSizeY;
   let tried = 0;
 
-  while (board[y][x] !== EMPTY_CELL && tried < boardSize) {
+  while (board[y][x].val !== EMPTY_CELL && tried < boardSize) {
     x = getRandomVal(0, boardSizeX);
     y = getRandomVal(0, boardSizeY);
     tried++;
   }
 
   if (tried < boardSize) {
-    board[y][x] = "2";
+    board[y][x] = { id: uuid(), val: 2 };
   }
   return board;
 };
@@ -89,9 +94,9 @@ const gravity = (line) => {
   let previous = "none";
   for (let i = 0; i < line.length; i++) {
     const elem = line[i];
-    if (elem !== EMPTY_CELL) {
-      if (elem === previous) {
-        grav[grav.length - 1] = String(Number(elem) * 2);
+    if (elem.val !== EMPTY_CELL) {
+      if (elem.val === previous.val) {
+        grav[grav.length - 1].val = String(Number(elem.val) * 2);
         previous = "none";
       } else {
         previous = elem;
@@ -100,7 +105,10 @@ const gravity = (line) => {
     }
   }
 
-  const remainder = Array(line.length - grav.length).fill(EMPTY_CELL);
+  const remainder = Array(line.length - grav.length).fill({
+    id: uuid(),
+    val: EMPTY_CELL,
+  });
   const newLine = grav.concat(remainder);
   return newLine;
 };
