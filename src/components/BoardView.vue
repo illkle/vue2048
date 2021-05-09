@@ -1,78 +1,103 @@
 <template>
   <div class="outerCont">
-    <div class="gridContainer">
+    <div class="gridContainer" :style="{ width: `${boardWidth}px` }">
       <template :key="line.index" v-for="line in board.field">
         <template :key="item.id" v-for="item in line">
-          <div class="gridEmpty"></div>
+          <div
+            class="gridEmpty"
+            :style="{
+              width: `${cellSize}px`,
+              height: `${cellSize}px`,
+              margin: `${gridGap}px`,
+            }"
+          ></div>
         </template>
       </template>
     </div>
 
-    <div class="gridContainerTop">
-      <div
-        v-for="cell in cells"
-        :key="cell.id"
-        class="gridCell"
-        :style="{ left: `${cell.x * 85}px`, top: `${cell.y * 85}px` }"
-      ></div>
-      <template v-for="(line, lineindex) in board.field" :key="line.index">
-        <template v-for="(item, itemindex) in line" :key="item.id">
-          <div
-            class="gridCell"
-            :style="{
-              backgroundColor: Number.isNaN(Number(item.val))
-                ? 'white'
-                : `hsl(${55 - Math.log2(item.val) * 4}, 100%, 50%)`,
-              left: `${itemindex * 85}px`,
-              top: `${lineindex * 85}px`,
-            }"
-            v-if="item.val !== EMPTY_CELL"
-          >
-            {{ item.val }}
-          </div>
-        </template>
-      </template>
+    <div class="gridContainer abs" :style="{ width: `${boardWidth}px` }">
+      <NumberCell
+        v-for="item in GridCellsWithPos"
+        :key="item.id"
+        :number="Number(item.val)"
+        :x="item.x"
+        :y="item.y"
+        :dimensions="cellSize"
+        :gridGap="gridGap"
+      />
     </div>
   </div>
-
-  <div :style="GridStyle" class="wrapper"></div>
 </template>
 
 <script>
 import b from "../helpers/boardProcessing";
+import NumberCell from "./NumberCell";
 
 export default {
   props: {
     board: {
-      type: Array,
-      default: () => [
-        [0, 0],
-        [0, 0],
-      ],
+      type: Object,
+      default: () => {
+        // eslint-disable-next-line no-unused-labels
+        field: [
+          [0, 0],
+          [0, 0],
+        ];
+      },
     },
+  },
+  components: {
+    NumberCell,
   },
   data() {
     return {
       EMPTY_CELL: b.EMPTY_CELL,
+      cellSize: 75,
+      gridGap: 2.5,
     };
   },
   computed: {
-    GridStyle() {
-      if (Object.is(this.board[0], undefined)) {
-        return "";
+    GridCellsWithPos() {
+      if (!this.board.field) {
+        return;
+      }
+      const parsePos = (input) => {
+        const withPositions = [];
+        for (const [lineIndex, line] of input.entries()) {
+          for (const [itemIndex, item] of line.entries()) {
+            if (item.val !== b.EMPTY_CELL) {
+              withPositions.push({
+                ...item,
+                x: itemIndex,
+                y: lineIndex,
+              });
+            }
+          }
+        }
+        return withPositions;
+      };
+
+      let withPos = parsePos(this.board.field);
+
+      if (this.board.remainder) {
+        const extra = parsePos(this.board.remainder);
+        withPos = withPos.concat(extra);
       }
 
-      return {
-        "grid-template-rows": `repeat(${this.board.length}, 75px)`,
-        "grid-template-columns": `repeat(${this.board[0].length}, 75px)`,
-      };
+      return withPos;
+    },
+    boardWidth() {
+      if (!this.board.field) {
+        return 0;
+      }
+      return (this.cellSize + this.gridGap * 2) * this.board.field[0].length;
     },
   },
   methods: {},
 };
 </script>
 
-<style scoped>
+<style>
 * {
   margin: 0;
   padding: 0;
@@ -84,23 +109,20 @@ export default {
   margin-top: 150px;
 }
 .gridContainer {
-  width: 340px;
   display: flex;
   flex-wrap: wrap;
 }
 
-.gridContainerTop {
-  width: 340px;
-  display: flex;
-  flex-wrap: wrap;
+.debug {
+  position: absolute;
+}
+
+.abs {
   position: absolute;
 }
 
 .gridEmpty,
 .gridCell {
-  margin: 5px;
-  width: 75px;
-  height: 75px;
   justify-content: center;
   align-items: center;
   display: flex;
@@ -108,15 +130,13 @@ export default {
 }
 
 .gridEmpty {
-  font-size: 30px;
   color: white;
   background-color: rgb(224, 216, 194);
 }
 
 .gridCell {
   font-size: 20px;
-  color: white;
+  color: rgb(20, 20, 20);
   position: absolute;
-  transition: 0.2s;
 }
 </style>

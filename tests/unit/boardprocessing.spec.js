@@ -17,33 +17,61 @@ const encodeBoard = (board) => {
 const decodeLine = (line) => line.map((obj) => obj.val);
 
 const decodeBoard = (board) => {
-  return board.field.map((line) => decodeLine(line));
+  return board.map((line) => decodeLine(line));
 };
 
 describe("Basic Gravity", () => {
   it("Gravity works for moving stuff", () => {
     const initial = encodeLine([X, "4", X, "8"]);
     const expected = ["4", "8", X, X];
+    const expectedRem = [X, X, X, X];
 
     expect(decodeLine(b.gravity(initial).newLine)).toStrictEqual(expected);
+    expect(decodeLine(b.gravity(initial).rest)).toStrictEqual(expectedRem);
   });
   it("Gravity works merging stuff", () => {
     const initial = encodeLine(["4", "4", "8", "8"]);
     const expected = ["8", "16", X, X];
+    const expectedRem = ["4", "8", X, X];
 
-    expect(decodeLine(b.gravity(initial).newLine)).toStrictEqual(expected);
+    const result = b.gravity(initial);
+    const newLine = decodeLine(result.newLine);
+    const rest = decodeLine(result.rest);
+
+    expect(newLine).toStrictEqual(expected);
+    expect(rest).toStrictEqual(expectedRem);
+    expect(result.rest[0].id).toBe(initial[1].id);
+    expect(result.rest[1].id).toBe(initial[3].id);
   });
   it("Gravity works moving and merging", () => {
     const initial = encodeLine(["4", X, X, "4", "2", "16", X, "16"]);
     const expected = ["8", "2", "32", X, X, X, X, X];
+    const expectedRem = ["4", X, "16", X, X, X, X, X];
 
-    expect(decodeLine(b.gravity(initial).newLine)).toStrictEqual(expected);
+    const result = b.gravity(initial);
+    const newLine = decodeLine(result.newLine);
+    const rest = decodeLine(result.rest);
+
+    expect(newLine).toStrictEqual(expected);
+    expect(rest).toStrictEqual(expectedRem);
+    expect(result.rest[0].id).toBe(initial[3].id);
+    expect(result.rest[2].id).toBe(initial[7].id);
   });
+
   it("Gravity works when merging several adjacent", () => {
     const initial = encodeLine(["4", X, X, "4", "2", "16", "16", "16"]);
     const expected = ["8", "2", "32", "16", X, X, X, X];
+    const expectedRem = ["4", X, "16", X, X, X, X, X];
 
-    expect(decodeLine(b.gravity(initial).newLine)).toStrictEqual(expected);
+    //expect(decodeLine(b.gravity(initial).newLine)).toStrictEqual(expected);
+    const result = b.gravity(initial);
+    const newLine = decodeLine(result.newLine);
+    const rest = decodeLine(result.rest);
+
+    expect(newLine).toStrictEqual(expected);
+    expect(rest).toStrictEqual(expectedRem);
+    expect(result.rest[0].id).toBe(initial[3].id);
+    expect(result.rest[2].id).toBe(initial[6].id);
   });
 });
 
@@ -63,24 +91,53 @@ describe("Moves", () => {
       ["32", "32", X, X],
     ];
 
-    expect(decodeBoard(b.moveLeft(initial))).toStrictEqual(expected);
+    const expectedRem = [
+      ["2", X, X, X],
+      [X, X, X, X],
+      [X, "16", X, X],
+      [X, "16", X, X],
+    ];
+
+    const result = b.moveLeft(initial);
+    const field = decodeBoard(result.field);
+    const remainder = decodeBoard(result.remainder);
+
+    expect(field).toStrictEqual(expected);
+    expect(remainder).toStrictEqual(expectedRem);
+    expect(result.remainder[0][0]).toStrictEqual(initial.field[0][2]);
+    expect(result.remainder[2][1]).toStrictEqual(initial.field[2][3]);
+    expect(result.remainder[3][1]).toStrictEqual(initial.field[3][2]);
   });
   it("Moves right correctly", () => {
     const initial = encodeBoard([
       [X, "2", "2", X],
       ["4", "8", X, "8"],
       [X, "2", X, X],
-      ["32", "16", "16", X],
+      ["32", "16", "16", "4"],
     ]);
 
     const expected = [
       [X, X, X, "4"],
       [X, X, "4", "16"],
       [X, X, X, "2"],
-      [X, X, "32", "32"],
+      [X, "32", "32", "4"],
+    ];
+    const expectedRem = [
+      [X, X, X, "2"],
+      [X, X, X, "8"],
+      [X, X, X, X],
+      [X, X, "16", X],
     ];
 
-    expect(decodeBoard(b.moveRight(initial))).toStrictEqual(expected);
+    const result = b.moveRight(initial);
+    const field = decodeBoard(result.field);
+    const remainder = decodeBoard(result.remainder);
+
+    expect(field).toStrictEqual(expected);
+    expect(remainder).toStrictEqual(expectedRem);
+    expect(result.remainder[0][3]).toStrictEqual(initial.field[0][1]);
+    expect(result.remainder[1][3]).toStrictEqual(initial.field[1][1]);
+    expect(result.remainder[3][2]).toStrictEqual(initial.field[3][1]);
   });
 
   it("Moves up correctly", () => {
@@ -98,7 +155,21 @@ describe("Moves", () => {
       [X, X, X, X],
     ];
 
-    expect(decodeBoard(b.moveUp(initial))).toStrictEqual(expected);
+    const expectedRem = [
+      ["4", "2", X, X],
+      [X, X, X, X],
+      [X, X, X, X],
+      [X, X, X, X],
+    ];
+
+    const result = b.moveUp(initial);
+
+    const field = decodeBoard(result.field);
+    const remainder = decodeBoard(result.remainder);
+    expect(field).toStrictEqual(expected);
+    expect(remainder).toStrictEqual(expectedRem);
+    expect(result.remainder[0][0]).toStrictEqual(initial.field[2][0]);
+    expect(result.remainder[0][1]).toStrictEqual(initial.field[2][1]);
   });
 
   it("Moves down correctly", () => {
@@ -116,7 +187,21 @@ describe("Moves", () => {
       ["32", "4", "4", "8"],
     ];
 
-    expect(decodeBoard(b.moveDown(initial))).toStrictEqual(expected);
+    const expectedRem = [
+      [X, X, X, X],
+      [X, X, X, X],
+      ["4", X, X, X],
+      [X, "2", X, X],
+    ];
+
+    const result = b.moveDown(initial);
+
+    const field = decodeBoard(result.field);
+    const remainder = decodeBoard(result.remainder);
+    expect(field).toStrictEqual(expected);
+    expect(remainder).toStrictEqual(expectedRem);
+    expect(result.remainder[2][0]).toStrictEqual(initial.field[1][0]);
+    expect(result.remainder[3][1]).toStrictEqual(initial.field[0][1]);
   });
 });
 

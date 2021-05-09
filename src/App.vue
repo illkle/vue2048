@@ -29,12 +29,10 @@ export default {
   methods: {
     initBoard(x, y) {
       this.board = BoardProcess.initBoard(x, y);
-      console.log("initted ", this.board);
       this.addTwoToRandomPlace();
       this.addTwoToRandomPlace();
     },
     addTwoToRandomPlace() {
-      console.log("adding two");
       this.board = BoardProcess.addTwoToRandomPlace(this.board);
     },
     handlePressedButton(button) {
