@@ -115,7 +115,6 @@ export default {
     this.initBoard();
 
     const savedScores = window.localStorage.getItem("topScores");
-    console.log(JSON.parse(savedScores));
     if (savedScores) {
       this.topScores = JSON.parse(savedScores);
     }
@@ -126,6 +125,9 @@ export default {
         e.preventDefault();
         this.handlePressedButton(e.key);
       }
+    });
+    document.addEventListener("swiped", function () {
+      this.board = boardProcessing.moveUp(this.board);
     });
   },
   watch: {
@@ -203,6 +205,15 @@ export default {
   background-color: rgb(24, 24, 24);
 }
 
+@media (max-height: 1000px) {
+  .title {
+    font-weight: 900;
+    font-size: 50px;
+  }
+  .menuContainer {
+    font-size: 15px;
+  }
+}
 .scoreBox,
 .newBox {
   font-weight: 700;
@@ -266,7 +277,8 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .footer {
-  margin-top: 100px;
+  text-align: right;
+  margin-top: 10px;
 }
 .footer a {
   color: rgb(133, 133, 133);
