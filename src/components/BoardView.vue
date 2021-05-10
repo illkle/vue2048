@@ -9,6 +9,7 @@ export default {
     y: Number,
     boardWidth: Number,
     boardHeight: Number,
+    lost: Boolean,
   },
   components: {
     NumberCell,
@@ -67,6 +68,9 @@ export default {
           (dims.y - dims.x) * (this.cellSize + this.cellMargin * 2);
       }
     },
+    restartGame() {
+      this.$emit("restartGame");
+    },
   },
   watch: {
     boardDimensions: {
@@ -112,7 +116,19 @@ export default {
         </template>
       </template>
     </div>
-
+    <transition name="fade">
+      <div
+        v-if="lost"
+        class="gridContainer abs lost"
+        :style="{
+          width: `${boardWidth - horizontalpadding}px`,
+          height: `${boardHeight - horizontalpadding}px`,
+        }"
+      >
+        <p>You lost :(</p>
+        <button @click="restartGame()">RESTART</button>
+      </div>
+    </transition>
     <div
       class="gridContainer abs"
       :style="{
@@ -140,6 +156,44 @@ export default {
 .gridContainer {
   display: flex;
   flex-wrap: wrap;
+}
+
+.lost {
+  background-color: rgba(0, 0, 0, 0.685);
+  z-index: 10000;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  font-size: 25px;
+  transition: all 1s;
+}
+
+.lost button {
+  display: flex;
+  width: 150px;
+  margin-top: 25px;
+  padding: 15px 25px;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+  background-color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: 700;
+}
+
+.fade-enter-active {
+  transition: opacity 0.25s ease-out;
+}
+.fade-leave-active {
+  transition: opacity 0.1s ease-out;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 .debug {

@@ -1,6 +1,7 @@
 <script>
 import BoardView from "./components/BoardView";
 import boardProcessing from "./helpers/boardProcessing";
+import { debounce } from "debounce";
 
 export default {
   name: "App",
@@ -10,6 +11,7 @@ export default {
   data() {
     return {
       board: [],
+      lost: false,
       won: false,
       x: 4,
       y: 4,
@@ -17,6 +19,7 @@ export default {
         width: 0,
         height: 0,
       },
+      topScores: {},
     };
   },
   computed: {
@@ -24,17 +27,23 @@ export default {
       const calculated = Math.min(this.window.width, this.window.height) * 0.9;
       return calculated > 500 ? 500 : calculated;
     },
-    loser() {
-      if (this.board.length < 2) {
-        return false;
-      }
-      return boardProcessing.loseCheck(this.board);
-    },
     score() {
-      if (this.board.length < 2) {
+      if (!this.board.field) {
         return 0;
       }
       return boardProcessing.countBoardSum(this.board);
+    },
+    topScore() {
+      if (!this.board.field) {
+        return;
+      }
+      const boardCellsCount =
+        this.board.field.length * this.board.field[0].length;
+      if (this.topScores[boardCellsCount]) {
+        return this.topScores[boardCellsCount];
+      } else {
+        return 0;
+      }
     },
   },
   methods: {
@@ -72,11 +81,44 @@ export default {
       this.window.width = window.innerWidth;
       this.window.height = window.innerHeight;
     },
+    winLoseChecks: debounce(function () {
+      if (!this.board.field) {
+        return;
+      }
+
+      this.lost = boardProcessing.loseCheck(this.board);
+
+      if (this.won === true) {
+        return;
+      }
+      const winCheckResult = boardProcessing.winCheck(this.board);
+
+      if (winCheckResult === true) {
+        this.won = true;
+      }
+    }, 250),
+    updateTopScore: debounce(function () {
+      const boardCellsCount =
+        this.board.field.length * this.board.field[0].length;
+      if (this.topScore < this.score) {
+        this.topScores[boardCellsCount] = this.score;
+        window.localStorage.setItem(
+          "topScores",
+          JSON.stringify(this.topScores)
+        );
+      }
+    }, 1000),
   },
   mounted() {
     window.addEventListener("resize", this.handleResize);
     this.handleResize();
     this.initBoard();
+
+    const savedScores = window.localStorage.getItem("topScores");
+    console.log(JSON.parse(savedScores));
+    if (savedScores) {
+      this.topScores = JSON.parse(savedScores);
+    }
   },
   created() {
     window.addEventListener("keydown", (e) => {
@@ -87,16 +129,9 @@ export default {
     });
   },
   watch: {
-    board(newBoard) {
-      if (this.won === true || newBoard.field.length < 2) {
-        return;
-      }
-
-      const result = boardProcessing.winCheck(newBoard);
-
-      if (result === true) {
-        this.won = true;
-      }
+    board() {
+      this.winLoseChecks();
+      this.updateTopScore();
     },
   },
 };
@@ -106,13 +141,16 @@ export default {
   <div class="container" :style="{ width: `${boardSize + 25}px` }">
     <h1 class="title">2048</h1>
     <div class="menuContainer">
-      <div class="scoreBox"><span>Score:</span> {{ score }}</div>
       <div class="newBox">
         X
         <input class="dimsInput" type="number" max="20" v-model.number="x" />
         Y
         <input class="dimsInput" type="number" max="20" v-model.number="y" />
         <button class="newGameButton" @click="initBoard()">START</button>
+      </div>
+      <div class="scoreBox">
+        <span>SCORE:</span> {{ score }}<span>TOP_SCORE:</span>
+        {{ topScore }}
       </div>
     </div>
     <div class="boardHolder">
@@ -121,9 +159,10 @@ export default {
         :board="board"
         :boardWidth="boardSize"
         :boardHeight="boardSize"
+        :lost="lost"
+        @restartGame="initBoard()"
       />
     </div>
-    <div v-if="loser">HAHA LOSER!!!!!!!))))))))</div>
     <div v-if="won">U WON BRUH</div>
     <div class="footer">
       <a href="https://github.com/ze-kel/vue2048">source code</a>
@@ -147,22 +186,28 @@ export default {
   margin: 0 auto;
 }
 
+.title {
+  font-weight: 900;
+  font-size: 100px;
+}
+
 .menuContainer {
   display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
   font-weight: 700;
   font-size: 25px;
   justify-content: space-between;
   border-radius: 6px;
-  padding: 5px;
-
+  padding: 15px 5px;
   background-color: rgb(24, 24, 24);
 }
 
 .scoreBox,
 .newBox {
+  font-weight: 700;
   color: white;
   display: flex;
-  height: 60px;
   align-items: center;
   justify-content: center;
   padding: 0 15px;
@@ -172,14 +217,24 @@ export default {
   font-weight: 500;
 }
 
+.scoreBox {
+  margin-top: 5px;
+}
+
+.scoreBox span:last-child {
+  margin-left: 25px;
+}
+
 .newGameButton {
-  height: 80%;
+  height: 40px;
   padding: 0 15px;
   background-color: rgb(255, 255, 255);
   border: none;
   font-size: 25px;
   font-weight: 700;
+  line-height: 40px;
   margin-left: 15px;
+  white-space: nowrap;
 }
 .newGameButton:hover {
   cursor: pointer;
@@ -203,10 +258,6 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0 10px 0 5px;
 }
 
-.title {
-  font-weight: 900;
-  font-size: 150px;
-}
 .boardHolder {
   background-color: rgb(24, 24, 24);
   border-radius: 7px;
