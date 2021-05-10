@@ -189,8 +189,6 @@ export default {
 body,
 html {
   overflow: hidden;
-  overflow-y: auto;
-  overflow-x: hidden;
 }
 #app {
   font-family: "Roboto Mono", sans-serif;
