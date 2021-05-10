@@ -63,7 +63,6 @@ describe("Basic Gravity", () => {
     const expected = ["8", "2", "32", "16", X, X, X, X];
     const expectedRem = ["4", X, "16", X, X, X, X, X];
 
-    //expect(decodeLine(b.gravity(initial).newLine)).toStrictEqual(expected);
     const result = b.gravity(initial);
     const newLine = decodeLine(result.newLine);
     const rest = decodeLine(result.rest);

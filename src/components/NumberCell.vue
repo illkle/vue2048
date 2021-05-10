@@ -2,13 +2,14 @@
   <div
     class="gridCell"
     :style="{
-      backgroundColor: `hsl(${60 - Math.log2(tweenedNumber) * 4}, 100%, 50%)`,
+      backgroundColor: `hsl(${60 - Math.log2(tweenedNumber) * 5}, 100%, 50%)`,
       left: `${tweenedX * cellWithMargin}px`,
       top: `${tweenedY * cellWithMargin}px`,
       width: `${dimensions}px`,
       height: `${dimensions}px`,
       zIndex: number,
       margin: `${gridGap}px`,
+      fontSize: `${dimensions / 4}px`,
       transform: `scale(${size}, ${size})`,
     }"
   >
@@ -27,6 +28,7 @@ export default {
       tweenedY: 0,
       size: 0,
       sizeTo: 0,
+      animations: true,
     };
   },
   props: {
@@ -58,28 +60,44 @@ export default {
   },
   watch: {
     number(newValue) {
-      gsap.to(this.$data, { duration: 0.15, tweenedNumber: newValue });
+      if (this.animations) {
+        gsap.to(this.$data, { duration: 0.15, tweenedNumber: newValue });
+      } else {
+        this.tweenedNumber = newValue;
+      }
     },
     x(newValue) {
-      gsap.to(this.$data, {
-        duration: 0.25,
-        tweenedX: newValue,
-        ease: "power2.inOut",
-      });
+      if (this.animations) {
+        gsap.to(this.$data, {
+          duration: 0.15,
+          tweenedX: newValue,
+          ease: "power2.inOut",
+        });
+      } else {
+        this.tweenedX = newValue;
+      }
     },
     y(newValue) {
-      gsap.to(this.$data, {
-        duration: 0.25,
-        tweenedY: newValue,
-        ease: "power2.inOut",
-      });
+      if (this.animations) {
+        gsap.to(this.$data, {
+          duration: 0.15,
+          tweenedY: newValue,
+          ease: "power2.inOut",
+        });
+      } else {
+        this.tweenedY = newValue;
+      }
     },
     sizeTo(newValue) {
-      gsap.to(this.$data, {
-        duration: 0.5,
-        size: newValue,
-        ease: "power4.out",
-      });
+      if (this.animations) {
+        gsap.to(this.$data, {
+          duration: 0.25,
+          size: newValue,
+          ease: "power4.out",
+        });
+      } else {
+        this.size = newValue;
+      }
     },
   },
   mounted() {

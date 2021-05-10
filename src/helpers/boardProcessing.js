@@ -34,7 +34,7 @@ const loseCheck = (boardObj) => {
   const board = boardObj.field;
   for (let x = 0; x < board[0].length; x++) {
     for (let y = 0; y < board.length; y++) {
-      if (board[y][x] === EMPTY_CELL) {
+      if (board[y][x].val === EMPTY_CELL) {
         return false;
       }
     }
@@ -67,6 +67,19 @@ const loseCheck = (boardObj) => {
   return true;
 };
 
+const winCheck = (boardObj) => {
+  const board = boardObj.field;
+  for (let x = 0; x < board[0].length; x++) {
+    for (let y = 0; y < board.length; y++) {
+      if (board[y][x].val >= 2048) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+};
+
 const initBoard = (x, y) => {
   const field = Array.from(Array(y), () => Array(x).fill({ val: EMPTY_CELL }));
   return { field };
@@ -77,21 +90,29 @@ const addTwoToRandomPlace = (boardObj) => {
   let boardSizeX = board[0].length;
   let boardSizeY = board.length;
 
-  let x = getRandomVal(0, boardSizeX);
-  let y = getRandomVal(0, boardSizeY);
+  let addingProbability = (boardSizeX * boardSizeY) / 16;
 
-  const boardSize = boardSizeX * boardSizeY;
-  let tried = 0;
+  while (addingProbability > 0) {
+    let x = getRandomVal(0, boardSizeX);
+    let y = getRandomVal(0, boardSizeY);
 
-  while (board[y][x].val !== EMPTY_CELL && tried < boardSize) {
-    x = getRandomVal(0, boardSizeX);
-    y = getRandomVal(0, boardSizeY);
-    tried++;
+    const boardSize = boardSizeX * boardSizeY;
+    let tried = 0;
+
+    while (board[y][x].val !== EMPTY_CELL && tried < boardSize) {
+      x = getRandomVal(0, boardSizeX);
+      y = getRandomVal(0, boardSizeY);
+      tried++;
+    }
+
+    if (tried < boardSize) {
+      board[y][x] = { id: uuid(), val: 2 };
+      addingProbability -= 1;
+    } else {
+      addingProbability = 0;
+    }
   }
 
-  if (tried < boardSize) {
-    board[y][x] = { id: uuid(), val: 2 };
-  }
   return { field: board, remainder: boardObj.remainder };
 };
 
@@ -155,7 +176,7 @@ const moveRight = (boardObj) => {
 const moveUp = (boardObj) => {
   const board = JSON.parse(JSON.stringify(boardObj.field));
 
-  let rem = initBoard(board.length, board[0].length).field;
+  let rem = initBoard(board[0].length, board.length).field;
 
   for (let x = 0; x < board[0].length; x++) {
     const toProcess = [];
@@ -179,7 +200,7 @@ const moveUp = (boardObj) => {
 const moveDown = (boardObj) => {
   const board = JSON.parse(JSON.stringify(boardObj.field));
 
-  let rem = initBoard(board.length, board[0].length).field;
+  let rem = initBoard(board[0].length, board.length).field;
 
   for (let x = 0; x < board[0].length; x++) {
     const toProcess = [];
@@ -211,5 +232,6 @@ export default {
   addTwoToRandomPlace,
   countBoardSum,
   loseCheck,
+  winCheck,
   EMPTY_CELL,
 };

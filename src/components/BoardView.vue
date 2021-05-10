@@ -1,50 +1,14 @@
-<template>
-  <div class="outerCont">
-    <div class="gridContainer" :style="{ width: `${boardWidth}px` }">
-      <template :key="line.index" v-for="line in board.field">
-        <template :key="item.id" v-for="item in line">
-          <div
-            class="gridEmpty"
-            :style="{
-              width: `${cellSize}px`,
-              height: `${cellSize}px`,
-              margin: `${gridGap}px`,
-            }"
-          ></div>
-        </template>
-      </template>
-    </div>
-
-    <div class="gridContainer abs" :style="{ width: `${boardWidth}px` }">
-      <NumberCell
-        v-for="item in GridCellsWithPos"
-        :key="item.id"
-        :number="Number(item.val)"
-        :x="item.x"
-        :y="item.y"
-        :dimensions="cellSize"
-        :gridGap="gridGap"
-      />
-    </div>
-  </div>
-</template>
-
 <script>
 import b from "../helpers/boardProcessing";
 import NumberCell from "./NumberCell";
 
 export default {
   props: {
-    board: {
-      type: Object,
-      default: () => {
-        // eslint-disable-next-line no-unused-labels
-        field: [
-          [0, 0],
-          [0, 0],
-        ];
-      },
-    },
+    board: Object,
+    x: Number,
+    y: Number,
+    boardWidth: Number,
+    boardHeight: Number,
   },
   components: {
     NumberCell,
@@ -52,15 +16,17 @@ export default {
   data() {
     return {
       EMPTY_CELL: b.EMPTY_CELL,
-      cellSize: 75,
       gridGap: 2.5,
+      cellSize: 0,
+      cellMargin: 0,
+      horizontalpadding: 0,
     };
   },
   computed: {
+    boardDimensions() {
+      return { x: this.board.field[0].length, y: this.board.field.length };
+    },
     GridCellsWithPos() {
-      if (!this.board.field) {
-        return;
-      }
       const parsePos = (input) => {
         const withPositions = [];
         for (const [lineIndex, line] of input.entries()) {
@@ -86,27 +52,90 @@ export default {
 
       return withPos;
     },
-    boardWidth() {
-      if (!this.board.field) {
-        return 0;
+  },
+  methods: {
+    calculateDimensions() {
+      const dims = this.boardDimensions;
+      if (dims.x >= dims.y) {
+        this.cellSize = (this.boardWidth * 0.93) / dims.x;
+        this.cellMargin = (this.boardWidth * 0.07) / (dims.x * 2);
+        this.horizontalpadding = 0;
+      } else {
+        this.cellSize = (this.boardHeight * 0.93) / dims.y;
+        this.cellMargin = (this.boardHeight * 0.07) / (dims.y * 2);
+        this.horizontalpadding =
+          (dims.y - dims.x) * (this.cellSize + this.cellMargin * 2);
       }
-      return (this.cellSize + this.gridGap * 2) * this.board.field[0].length;
     },
   },
-  methods: {},
+  watch: {
+    boardDimensions: {
+      immediate: true,
+      handler() {
+        this.calculateDimensions();
+      },
+    },
+    boardWidth: {
+      immediate: true,
+      handler() {
+        this.calculateDimensions();
+      },
+    },
+    boardHeight: {
+      immediate: true,
+      handler() {
+        this.calculateDimensions();
+      },
+    },
+  },
 };
 </script>
 
-<style>
-* {
-  margin: 0;
-  padding: 0;
-  font-family: "Roboto";
-}
+<template>
+  <div class="outerCont">
+    <div
+      class="gridContainer"
+      :style="{
+        width: `${boardWidth - horizontalpadding}px`,
+      }"
+    >
+      <template :key="line.index" v-for="line in board.field">
+        <template :key="item.id" v-for="item in line">
+          <div
+            class="gridEmpty"
+            :style="{
+              width: `${cellSize}px`,
+              height: `${cellSize}px`,
+              margin: `${cellMargin}px`,
+            }"
+          ></div>
+        </template>
+      </template>
+    </div>
+
+    <div
+      class="gridContainer abs"
+      :style="{
+        width: `${boardWidth - horizontalpadding}px`,
+      }"
+    >
+      <NumberCell
+        v-for="item in GridCellsWithPos"
+        :key="item.id"
+        :number="Number(item.val)"
+        :x="item.x"
+        :y="item.y"
+        :dimensions="cellSize"
+        :gridGap="cellMargin"
+      />
+    </div>
+  </div>
+</template>
+
+<style scoped>
 .outerCont {
   display: flex;
   justify-content: center;
-  margin-top: 150px;
 }
 .gridContainer {
   display: flex;
@@ -135,8 +164,8 @@ export default {
 }
 
 .gridCell {
-  font-size: 20px;
-  color: rgb(20, 20, 20);
+  color: rgb(22, 24, 26);
+  font-weight: 700;
   position: absolute;
 }
 </style>
