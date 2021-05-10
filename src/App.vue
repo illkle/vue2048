@@ -126,8 +126,17 @@ export default {
         this.handlePressedButton(e.key);
       }
     });
-    document.addEventListener("swiped", function () {
-      this.board = boardProcessing.moveUp(this.board);
+    window.addEventListener("swiped-up", () => {
+      this.handlePressedButton("ArrowUp");
+    });
+    window.addEventListener("swiped-down", () => {
+      this.handlePressedButton("ArrowDown");
+    });
+    window.addEventListener("swiped-right", () => {
+      this.handlePressedButton("ArrowRight");
+    });
+    window.addEventListener("swiped-left", () => {
+      this.handlePressedButton("ArrowLeft");
     });
   },
   watch: {
@@ -176,6 +185,12 @@ export default {
 * {
   margin: 0;
   padding: 0;
+}
+body,
+html {
+  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 #app {
   font-family: "Roboto Mono", sans-serif;
