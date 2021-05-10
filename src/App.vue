@@ -218,15 +218,6 @@ html {
   background-color: rgb(24, 24, 24);
 }
 
-@media (max-height: 1000px) {
-  .title {
-    font-weight: 900;
-    font-size: 50px;
-  }
-  .menuContainer {
-    font-size: 15px;
-  }
-}
 .scoreBox,
 .newBox {
   font-weight: 700;
@@ -296,5 +287,23 @@ input[type="number"]::-webkit-outer-spin-button {
 .footer a {
   color: rgb(133, 133, 133);
   text-decoration: none;
+}
+@media (max-height: 1000px) {
+  .title {
+    font-weight: 900;
+    font-size: 50px;
+    margin-top: 15px;
+  }
+  .menuContainer {
+    font-size: 15px;
+    margin-top: 15px;
+    padding: 7px 5px;
+  }
+  .scoreBox {
+    margin-top: 7px;
+  }
+  .boardHolder {
+    margin-top: 15px;
+  }
 }
 </style>
