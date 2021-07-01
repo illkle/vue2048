@@ -15,6 +15,8 @@ export default {
       won: false,
       x: 4,
       y: 4,
+      x_i: 4,
+      y_i: 4,
       window: {
         width: 0,
         height: 0,
@@ -24,8 +26,11 @@ export default {
   },
   computed: {
     boardSize() {
-      const calculated = Math.min(this.window.width, this.window.height) * 0.9;
-      return calculated > 500 ? 500 : calculated;
+      const cellSize = Math.min(
+        (this.window.width - 100) / this.x,
+        (this.window.height - 350) / this.y
+      );
+      return cellSize;
     },
     score() {
       if (!this.board.field) {
@@ -48,6 +53,8 @@ export default {
   },
   methods: {
     initBoard() {
+      this.x = this.x_i;
+      this.y = this.y_i;
       this.board = boardProcessing.initBoard(this.x, this.y);
       this.addTwoToRandomPlace();
       this.addTwoToRandomPlace();
@@ -149,32 +156,46 @@ export default {
 </script>
 
 <template>
-  <div class="container" :style="{ width: `${boardSize + 25}px` }">
-    <h1 class="title">2048</h1>
-    <div class="menuContainer">
-      <div class="newBox">
-        X
-        <input class="dimsInput" type="number" max="20" v-model.number="x" />
-        Y
-        <input class="dimsInput" type="number" max="20" v-model.number="y" />
-        <button class="newGameButton" @click="initBoard()">START</button>
-      </div>
-      <div class="scoreBox">
-        <span>SCORE:</span> {{ score }}<span>TOP_SCORE:</span>
-        {{ topScore }}
+  <div
+    class="container"
+    :style="{ width: `${(boardSize * x > 500 ? boardSize * x : 500) + 25}px` }"
+  >
+    <div class="info">
+      <h1 class="title">2048</h1>
+      <div class="menuContainer">
+        <div class="newBox">
+          X
+          <input
+            class="dimsInput"
+            type="number"
+            max="20"
+            v-model.number="x_i"
+          />
+          Y
+          <input
+            class="dimsInput"
+            type="number"
+            max="20"
+            v-model.number="y_i"
+          />
+          <button class="newGameButton" @click="initBoard()">START</button>
+        </div>
+        <div class="scoreBox">
+          <span>SCORE:</span> {{ score }}<span>TOP_SCORE:</span>
+          {{ topScore }}
+        </div>
       </div>
     </div>
     <div class="boardHolder">
       <BoardView
         v-if="this.board.field"
         :board="board"
-        :boardWidth="boardSize"
-        :boardHeight="boardSize"
+        :boardWidth="boardSize * x"
+        :boardHeight="boardSize * y"
         :lost="lost"
         @restartGame="initBoard()"
       />
     </div>
-    <div v-if="won">U WON BRUH</div>
     <div class="footer">
       <a href="https://github.com/ze-kel/vue2048">source code</a>
     </div>
@@ -195,6 +216,11 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
+}
+
+.info {
+  max-height: 325px;
+  padding-bottom: 15px;
 }
 
 .container {
@@ -277,7 +303,6 @@ input[type="number"]::-webkit-outer-spin-button {
   background-color: rgb(24, 24, 24);
   border-radius: 7px;
   padding: 10px 0;
-  margin-top: 25px;
 }
 
 .footer {
@@ -301,9 +326,6 @@ input[type="number"]::-webkit-outer-spin-button {
   }
   .scoreBox {
     margin-top: 7px;
-  }
-  .boardHolder {
-    margin-top: 15px;
   }
 }
 </style>

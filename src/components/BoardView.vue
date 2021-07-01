@@ -20,7 +20,6 @@ export default {
       gridGap: 2.5,
       cellSize: 0,
       cellMargin: 0,
-      horizontalpadding: 0,
     };
   },
   computed: {
@@ -58,14 +57,11 @@ export default {
     calculateDimensions() {
       const dims = this.boardDimensions;
       if (dims.x >= dims.y) {
-        this.cellSize = (this.boardWidth * 0.93) / dims.x;
-        this.cellMargin = (this.boardWidth * 0.07) / (dims.x * 2);
-        this.horizontalpadding = 0;
+        this.cellSize = (this.boardWidth * 0.94) / dims.x;
+        this.cellMargin = (this.boardWidth * 0.06) / (dims.x * 2);
       } else {
-        this.cellSize = (this.boardHeight * 0.93) / dims.y;
-        this.cellMargin = (this.boardHeight * 0.07) / (dims.y * 2);
-        this.horizontalpadding =
-          (dims.y - dims.x) * (this.cellSize + this.cellMargin * 2);
+        this.cellSize = (this.boardHeight * 0.94) / dims.y;
+        this.cellMargin = (this.boardHeight * 0.06) / (dims.y * 2);
       }
     },
     restartGame() {
@@ -100,7 +96,7 @@ export default {
     <div
       class="gridContainer"
       :style="{
-        width: `${boardWidth - horizontalpadding}px`,
+        width: `${boardWidth}px`,
       }"
     >
       <template :key="line.index" v-for="line in board.field">
@@ -121,8 +117,8 @@ export default {
         v-if="lost"
         class="gridContainer abs lost"
         :style="{
-          width: `${boardWidth - horizontalpadding}px`,
-          height: `${boardHeight - horizontalpadding}px`,
+          width: `${boardWidth}px`,
+          height: `${boardHeight}px`,
         }"
       >
         <p>You lost :(</p>
@@ -132,7 +128,7 @@ export default {
     <div
       class="gridContainer abs"
       :style="{
-        width: `${boardWidth - horizontalpadding}px`,
+        width: `${boardWidth}px`,
       }"
     >
       <NumberCell
