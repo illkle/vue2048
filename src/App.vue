@@ -27,7 +27,7 @@ export default {
   computed: {
     boardSize() {
       const cellSize = Math.min(
-        (this.window.width - 100) / this.x,
+        (this.window.width - Math.min(100, this.window.width * 0.1)) / this.x,
         (this.window.height - 350) / this.y
       );
       return cellSize;
@@ -156,10 +156,7 @@ export default {
 </script>
 
 <template>
-  <div
-    class="container"
-    :style="{ width: `${(boardSize * x > 500 ? boardSize * x : 500) + 25}px` }"
-  >
+  <div class="container">
     <div class="info">
       <h1 class="title">2048</h1>
       <div class="menuContainer">
@@ -186,7 +183,12 @@ export default {
         </div>
       </div>
     </div>
-    <div class="boardHolder">
+    <div
+      class="boardHolder"
+      :style="{
+        width: `${boardSize * x + (this.window.width >= 768 ? 25 : 3)}px`,
+      }"
+    >
       <BoardView
         v-if="this.board.field"
         :board="board"
@@ -225,6 +227,9 @@ html {
 
 .container {
   margin: 0 auto;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }
 
 .title {
@@ -301,8 +306,15 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .boardHolder {
   background-color: rgb(24, 24, 24);
-  border-radius: 7px;
-  padding: 10px 0;
+  border-radius: 4px;
+  padding: 3px 0;
+}
+
+@media (min-width: 768px) {
+  .boardHolder {
+    padding: 10px 0;
+    border-radius: 7px;
+  }
 }
 
 .footer {
