@@ -1,5 +1,5 @@
 <script>
-import BoardView from "./components/BoardView";
+import BoardView from "./components/BoardView.vue";
 import boardProcessing from "./helpers/boardProcessing";
 import { debounce } from "debounce";
 

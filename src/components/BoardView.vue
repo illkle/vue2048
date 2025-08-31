@@ -1,6 +1,6 @@
 <script>
 import b from "../helpers/boardProcessing";
-import NumberCell from "./NumberCell";
+import NumberCell from "./NumberCell.vue";
 
 export default {
   props: {
